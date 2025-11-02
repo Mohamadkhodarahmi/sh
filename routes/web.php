@@ -30,3 +30,11 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// SEO Routes
+Route::get('/sitemap.xml', function () {
+    if (file_exists(public_path('sitemap.xml'))) {
+        return response()->file(public_path('sitemap.xml'));
+    }
+    return redirect('/');
+})->name('sitemap');
