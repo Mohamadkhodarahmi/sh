@@ -4,18 +4,6 @@
 @section('description', 'مشاهده و خرید محصولات با کیفیت با قیمت‌های مناسب')
 @section('keywords', 'محصولات, خرید, فروشگاه, قیمت, تخفیف')
 
-@push('structured_data')
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "محصولات",
-    "description": "لیست کامل محصولات فروشگاه",
-    "url": "{{ url()->current() }}"
-}
-</script>
-@endpush
-
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-12">
     <div class="flex gap-12">
@@ -66,7 +54,10 @@
             <header class="mb-8">
                 <h1 class="text-3xl font-bold mb-2">
                     @if(request('category'))
-                        {{ $categories->where('id', request('category'))->first()->name_fa ?? 'محصولات' }}
+                        @php
+                            $cat = $categories->where('id', request('category'))->first();
+                        @endphp
+                        {{ $cat ? $cat->name_fa : 'محصولات' }}
                     @else
                         محصولات
                     @endif

@@ -15,9 +15,21 @@
     
     <!-- Open Graph Meta Tags -->
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:title" content="@hasSection('og_title')@yield('og_title')@else@yield('title', 'فروشگاه اینترنتی')@endif">
-    <meta property="og:description" content="@hasSection('og_description')@yield('og_description')@else@yield('description', 'فروشگاه اینترنتی با بهترین محصولات')@endif">
-    <meta property="og:image" content="@hasSection('og_image')@yield('og_image')@else{{ asset('storage/products/تست.webp') }}@endif">
+    @if(View::hasSection('og_title'))
+        <meta property="og:title" content="@yield('og_title')">
+    @else
+        <meta property="og:title" content="@yield('title', 'فروشگاه اینترنتی')">
+    @endif
+    @if(View::hasSection('og_description'))
+        <meta property="og:description" content="@yield('og_description')">
+    @else
+        <meta property="og:description" content="@yield('description', 'فروشگاه اینترنتی با بهترین محصولات')">
+    @endif
+    @if(View::hasSection('og_image'))
+        <meta property="og:image" content="@yield('og_image')">
+    @else
+        <meta property="og:image" content="{{ asset('storage/products/تست.webp') }}">
+    @endif
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="fa_IR">
     <meta property="og:site_name" content="فروشگاه">
@@ -26,7 +38,11 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'فروشگاه اینترنتی')">
     <meta name="twitter:description" content="@yield('description', 'فروشگاه اینترنتی با بهترین محصولات')">
-    <meta name="twitter:image" content="@hasSection('og_image')@yield('og_image')@else{{ asset('storage/products/تست.webp') }}@endif">
+    @if(View::hasSection('og_image'))
+        <meta name="twitter:image" content="@yield('og_image')">
+    @else
+        <meta name="twitter:image" content="{{ asset('storage/products/تست.webp') }}">
+    @endif
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -39,9 +55,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Structured Data (JSON-LD) -->
-    @hasSection('structured_data')
-        @yield('structured_data')
-    @endif
     @stack('structured_data')
     
     <style>
@@ -55,10 +68,32 @@
             color: #000;
             font-weight: 400;
             letter-spacing: 0.5px;
+            position: relative;
+            display: inline-block;
             transition: opacity 0.2s;
         }
+        .minimal-nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        .minimal-nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
         .minimal-nav-link:hover {
-            opacity: 0.6;
+            opacity: 1;
+        }
+        .minimal-nav-link.font-bold::after {
+            transform: scaleX(1);
+            transform-origin: left;
         }
         /* Smooth scrolling */
         html {
@@ -79,6 +114,61 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+        /* Header scroll effect */
+        header {
+            transition: all 0.3s ease;
+            background: #ffffff;
+            box-shadow: none;
+            will-change: transform, opacity;
+        }
+        header.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        header.scrolled .border-b {
+            border-bottom-width: 1px;
+        }
+        header.scrolled nav[aria-label="منوی اصلی"] {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+        header.scrolled nav[aria-label="منوی اصلی"] > div:first-child {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        header.scrolled nav[aria-label="منوی اصلی"] a.text-4xl {
+            font-size: 1.5rem;
+            transition: font-size 0.3s ease;
+        }
+        header.scrolled nav[aria-label="منوی اصلی"] > div:last-child {
+            padding-bottom: 0.5rem;
+        }
+        /* Prevent layout shift */
+        header > div:first-child {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            min-height: 40px;
+        }
+        header.scrolled > div:first-child {
+            opacity: 0;
+            visibility: hidden;
+            height: 0;
+            min-height: 0;
+            overflow: hidden;
+            border-bottom: none;
+            pointer-events: none;
+            margin: 0;
+            padding: 0;
+        }
+        header nav[aria-label="ابزارهای سایت"] {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        header.scrolled nav[aria-label="ابزارهای سایت"] {
+            opacity: 0;
+            visibility: hidden;
+            height: 0;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="bg-white text-black antialiased">
@@ -88,11 +178,11 @@
     </a>
     
     <!-- Minimal Header -->
-    <header class="border-b border-black" role="banner">
+    <header class="fixed top-0 left-0 right-0 z-50 border-b border-black bg-white" role="banner" id="main-header">
         <!-- Top Utility Bar -->
-        <div class="border-b border-black">
-            <div class="max-w-7xl mx-auto px-4">
-                <nav class="flex justify-between items-center h-10 text-xs" aria-label="ابزارهای سایت">
+        <div class="border-b border-black transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 transition-all duration-300">
+                <nav class="flex justify-between items-center h-10 text-xs transition-all duration-300" aria-label="ابزارهای سایت">
                     <div class="flex items-center gap-6">
                         @auth
                             <span class="text-black">{{ auth()->user()->name }}</span>
@@ -125,21 +215,24 @@
         </div>
 
         <!-- Main Navigation -->
-        <nav class="max-w-7xl mx-auto px-4" role="navigation" aria-label="منوی اصلی">
-            <div class="flex justify-center items-center py-6">
+        <nav class="max-w-7xl mx-auto px-4 transition-all duration-300" role="navigation" aria-label="منوی اصلی">
+            <div class="flex justify-center items-center py-6 transition-all duration-300">
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="text-4xl font-bold tracking-tight text-black hover:opacity-70 transition" aria-label="صفحه اصلی فروشگاه">
+                <a href="{{ route('home') }}" class="text-4xl font-bold tracking-tight text-black hover:opacity-70 transition-all duration-300" aria-label="صفحه اصلی فروشگاه">
                     فروشگاه
                 </a>
             </div>
             
             <!-- Main Menu -->
-            <div class="flex justify-center items-center gap-12 pb-6">
+            <div class="flex justify-center items-center gap-12 pb-6 transition-all duration-300">
                 <a href="{{ route('home') }}" class="minimal-nav-link {{ request()->routeIs('home') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('home') ? 'page' : 'false' }}">خانه</a>
                 <a href="{{ route('products.index') }}" class="minimal-nav-link {{ request()->routeIs('products.*') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('products.*') ? 'page' : 'false' }}">محصولات</a>
             </div>
         </nav>
     </header>
+    
+    <!-- Header spacer to prevent layout shift -->
+    <div id="header-spacer" style="height: 140px; transition: height 0.3s ease;"></div>
 
     <!-- Messages -->
     @if(session('success'))
