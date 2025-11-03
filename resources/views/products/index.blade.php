@@ -6,6 +6,38 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-12">
+    <!-- Mobile Categories Menu -->
+    <div class="lg:hidden mb-6">
+        <button id="mobile-categories-toggle" class="w-full bg-black text-white py-3 px-4 text-sm font-medium flex items-center justify-between hover:opacity-90 transition" aria-expanded="false" aria-controls="mobile-categories-menu">
+            <span>دسته‌بندی‌ها</span>
+            <svg id="mobile-categories-arrow" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        <div id="mobile-categories-menu" class="overflow-hidden transition-all duration-300 ease-in-out max-h-0 opacity-0 border-b border-black">
+            <nav class="p-4 bg-white" aria-label="دسته‌بندی محصولات">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{{ route('products.index') }}" 
+                           class="block text-sm py-3 {{ !request('category') ? 'font-bold' : '' }} hover:opacity-60 transition"
+                           aria-current="{{ !request('category') ? 'page' : 'false' }}">
+                            همه
+                        </a>
+                    </li>
+                    @foreach($categories as $category)
+                        <li>
+                            <a href="{{ route('products.index', ['category' => $category->id]) }}" 
+                               class="block text-sm py-3 {{ request('category') == $category->id ? 'font-bold' : '' }} hover:opacity-60 transition"
+                               aria-current="{{ request('category') == $category->id ? 'page' : 'false' }}">
+                                {{ $category->name_fa }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </nav>
+        </div>
+    </div>
+
     <div class="flex gap-12">
         <!-- Sidebar Filters -->
         <aside class="w-64 flex-shrink-0 hidden lg:block" role="complementary" aria-label="فیلترها">
@@ -52,7 +84,7 @@
         <div class="flex-1">
             <!-- Page Title -->
             <header class="mb-8">
-                <h1 class="text-3xl font-bold mb-2">
+                <h1 class="text-2xl md:text-3xl font-bold mb-2">
                     @if(request('category'))
                         @php
                             $cat = $categories->where('id', request('category'))->first();
@@ -74,7 +106,7 @@
             <!-- Products Grid -->
             @if($products->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list" aria-label="لیست محصولات">
-                    @foreach($products as $product)
+                    @foreach($products as $index => $product)
                         <article class="group" role="listitem" itemscope itemtype="https://schema.org/Product">
                             <a href="{{ route('products.show', $product->slug) }}" class="block" itemprop="url">
                                 <!-- Product Image -->
@@ -84,7 +116,8 @@
                                              alt="{{ $product->name_fa }}" 
                                              class="w-full h-full object-cover group-hover:opacity-80 transition"
                                              itemprop="image"
-                                             loading="lazy"
+                                             loading="{{ $index < 3 ? 'eager' : 'lazy' }}"
+                                             fetchpriority="{{ $index < 3 ? 'high' : 'auto' }}"
                                              width="400"
                                              height="400">
                                     @else
@@ -102,8 +135,8 @@
                                 
                                 <!-- Product Info -->
                                 <div>
-                                    <h2 class="text-sm font-medium mb-1 line-clamp-2" itemprop="name">{{ $product->name_fa }}</h2>
-                                    <div class="flex items-baseline gap-2" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                                    <h2 class="text-sm font-medium mb-2 line-clamp-2 min-h-[2.5rem]" itemprop="name">{{ $product->name_fa }}</h2>
+                                    <div class="flex items-baseline gap-2 flex-wrap" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                                         @if($product->discount_price)
                                             <span class="text-sm font-medium" itemprop="price" content="{{ $product->discount_price }}">
                                                 {{ number_format($product->discount_price) }} تومان

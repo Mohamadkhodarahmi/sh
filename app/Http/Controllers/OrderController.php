@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
         $orders = Order::where('user_id', Auth::id())
@@ -41,7 +36,7 @@ class OrderController extends Controller
         $cartItems = CartItem::where('user_id', Auth::id())
             ->with('product')
             ->get();
-        
+
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'سبد خرید شما خالی است');
         }
@@ -63,17 +58,17 @@ class OrderController extends Controller
         $cartItems = CartItem::where('user_id', Auth::id())
             ->with('product')
             ->get();
-        
+
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'سبد خرید شما خالی است');
         }
 
         DB::beginTransaction();
         try {
-            $subtotal = $cartItems->sum(function($item) {
+            $subtotal = $cartItems->sum(function ($item) {
                 return $item->total;
             });
-            
+
             $shippingCost = 50000; // هزینه ثابت پست
             $total = $subtotal + $shippingCost;
 
@@ -114,6 +109,7 @@ class OrderController extends Controller
                 ->with('success', 'سفارش شما با موفقیت ثبت شد');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', 'خطا در ثبت سفارش. لطفا دوباره تلاش کنید.');
         }
     }

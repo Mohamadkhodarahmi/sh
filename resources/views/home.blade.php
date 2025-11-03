@@ -16,7 +16,7 @@
     <section class="mb-20" aria-labelledby="featured-products-heading">
         <h2 id="featured-products-heading" class="sr-only">محصولات ویژه</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" role="list" aria-label="لیست محصولات ویژه">
-            @foreach($featuredProducts as $product)
+            @foreach($featuredProducts as $index => $product)
                 <article class="group" role="listitem" itemscope itemtype="https://schema.org/Product">
                     <a href="{{ route('products.show', $product->slug) }}" class="block" itemprop="url">
                         <!-- Product Image -->
@@ -26,7 +26,8 @@
                                      alt="{{ $product->name_fa }}" 
                                      class="w-full h-full object-cover group-hover:opacity-80 transition"
                                      itemprop="image"
-                                     loading="lazy"
+                                     loading="{{ $index < 4 ? 'eager' : 'lazy' }}"
+                                     fetchpriority="{{ $index < 4 ? 'high' : 'auto' }}"
                                      width="400"
                                      height="400">
                             @else
@@ -44,8 +45,8 @@
                         
                         <!-- Product Info -->
                         <div>
-                            <h3 class="text-sm font-medium mb-1 line-clamp-2" itemprop="name">{{ $product->name_fa }}</h3>
-                            <div class="flex items-baseline gap-2" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                            <h3 class="text-sm font-medium mb-2 line-clamp-2 min-h-[2.5rem]" itemprop="name">{{ $product->name_fa }}</h3>
+                            <div class="flex items-baseline gap-2 flex-wrap" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                                 @if($product->discount_price)
                                     <span class="text-sm font-medium" itemprop="price" content="{{ $product->discount_price }}">
                                         {{ number_format($product->discount_price) }} تومان
@@ -105,8 +106,8 @@
                         
                         <!-- Product Info -->
                         <div>
-                            <h3 class="text-sm font-medium mb-1 line-clamp-2" itemprop="name">{{ $product->name_fa }}</h3>
-                            <div class="flex items-baseline gap-2" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                            <h3 class="text-sm font-medium mb-2 line-clamp-2 min-h-[2.5rem]" itemprop="name">{{ $product->name_fa }}</h3>
+                            <div class="flex items-baseline gap-2 flex-wrap" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                                 @if($product->discount_price)
                                     <span class="text-sm font-medium" itemprop="price" content="{{ $product->discount_price }}">
                                         {{ number_format($product->discount_price) }} تومان

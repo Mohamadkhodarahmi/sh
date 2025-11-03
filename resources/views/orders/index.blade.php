@@ -3,70 +3,80 @@
 @section('title', 'سفارشات من')
 
 @section('content')
-<h1 class="text-4xl font-bold mb-8">سفارشات من</h1>
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold mb-2">سفارشات من</h1>
+    </header>
 
-@if($orders->count() > 0)
-<div class="space-y-6">
-    @foreach($orders as $order)
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-xl font-bold">سفارش #{{ $order->order_number }}</h3>
-                    <p class="text-gray-600 text-sm">{{ $order->created_at->format('Y/m/d H:i') }}</p>
+    @if($orders->count() > 0)
+    <div class="space-y-8">
+        @foreach($orders as $order)
+            <article class="border-b border-black pb-8" itemscope itemtype="https://schema.org/Order">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold mb-1" itemprop="orderNumber">
+                            سفارش #{{ $order->order_number }}
+                        </h2>
+                        <time class="text-xs text-black" datetime="{{ $order->created_at->toIso8601String() }}" itemprop="orderDate">
+                            {{ $order->created_at->format('d F Y، H:i') }}
+                        </time>
+                    </div>
+                    <div>
+                        @php
+                            $statusLabels = [
+                                'pending' => 'در انتظار',
+                                'processing' => 'در حال پردازش',
+                                'shipped' => 'ارسال شده',
+                                'delivered' => 'تحویل داده شده',
+                                'cancelled' => 'لغو شده',
+                            ];
+                            $statusText = $statusLabels[$order->status] ?? 'در انتظار';
+                        @endphp
+                        <span class="text-xs font-medium">
+                            {{ $statusText }}
+                        </span>
+                    </div>
                 </div>
-                <div class="text-left">
-                    @php
-                        $statusLabels = [
-                            'pending' => ['text' => 'در انتظار', 'color' => 'bg-yellow-100 text-yellow-800'],
-                            'processing' => ['text' => 'در حال پردازش', 'color' => 'bg-blue-100 text-blue-800'],
-                            'shipped' => ['text' => 'ارسال شده', 'color' => 'bg-purple-100 text-purple-800'],
-                            'delivered' => ['text' => 'تحویل داده شده', 'color' => 'bg-green-100 text-green-800'],
-                            'cancelled' => ['text' => 'لغو شده', 'color' => 'bg-red-100 text-red-800'],
-                        ];
-                        $status = $statusLabels[$order->status] ?? $statusLabels['pending'];
-                    @endphp
-                    <span class="px-3 py-1 rounded {{ $status['color'] }} text-sm font-bold">
-                        {{ $status['text'] }}
-                    </span>
+                
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold mb-4">محصولات:</h3>
+                    <ul class="space-y-3">
+                        @foreach($order->items as $item)
+                            <li class="flex justify-between items-center text-sm">
+                                <span>{{ $item->product_name }} <span class="text-xs text-black">({{ $item->quantity }} عدد)</span></span>
+                                <span class="font-medium">{{ number_format($item->total) }} تومان</span>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
-            </div>
-            
-            <div class="mb-4">
-                <h4 class="font-bold mb-2">محصولات:</h4>
-                <ul class="space-y-2">
-                    @foreach($order->items as $item)
-                        <li class="flex justify-between text-sm">
-                            <span>{{ $item->product_name }} ({{ $item->quantity }} عدد)</span>
-                            <span>{{ number_format($item->total) }} تومان</span>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-            
-            <div class="flex justify-between items-center pt-4 border-t">
-                <div>
-                    <span class="text-gray-600">جمع کل:</span>
-                    <span class="text-xl font-bold text-green-600 mr-2">{{ number_format($order->total) }} تومان</span>
+                
+                <div class="flex justify-between items-center pt-4 border-t border-black">
+                    <div>
+                        <span class="text-sm">جمع کل:</span>
+                        <span class="text-xl font-bold mr-2" itemprop="totalPrice">{{ number_format($order->total) }} تومان</span>
+                    </div>
+                    <a href="{{ route('orders.show', $order->id) }}" 
+                       class="bg-black text-white px-6 py-2 text-xs font-medium hover:opacity-80 transition">
+                        مشاهده جزئیات
+                    </a>
                 </div>
-                <a href="{{ route('orders.show', $order->id) }}" 
-                   class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                    مشاهده جزئیات
-                </a>
-            </div>
-        </div>
-    @endforeach
-</div>
+            </article>
+        @endforeach
+    </div>
 
-<div class="mt-8">
-    {{ $orders->links() }}
+    @if($orders->hasPages())
+        <nav class="mt-16 border-t border-black pt-8" aria-label="صفحه‌بندی سفارشات">
+            {{ $orders->links('pagination::simple-tailwind') }}
+        </nav>
+    @endif
+    @else
+    <div class="text-center py-20">
+        <p class="text-sm mb-6">شما هنوز سفارشی ثبت نکرده‌اید</p>
+        <a href="{{ route('products.index') }}" class="bg-black text-white px-8 py-3 text-sm font-medium hover:opacity-80 transition inline-block">
+            مشاهده محصولات
+        </a>
+    </div>
+    @endif
 </div>
-@else
-<div class="text-center py-12 bg-white rounded-lg shadow-md">
-    <p class="text-gray-600 text-xl mb-4">شما هنوز سفارشی ثبت نکرده‌اید</p>
-    <a href="{{ route('products.index') }}" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 inline-block">
-        مشاهده محصولات
-    </a>
-</div>
-@endif
 @endsection
 

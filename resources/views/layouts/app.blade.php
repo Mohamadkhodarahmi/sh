@@ -47,21 +47,32 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     
+    <!-- Font Preconnect for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
     <!-- Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font loaded asynchronously to prevent render blocking -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </noscript>
     
     <!-- Structured Data (JSON-LD) -->
     @stack('structured_data')
     
     <style>
         body {
-            font-family: 'Vazirmatn', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #ffffff;
             color: #000000;
+        }
+        /* Font will be applied once loaded */
+        html.fonts-loaded body,
+        html.fonts-loaded {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         .minimal-nav-link {
             text-decoration: none;
@@ -180,16 +191,22 @@
     <!-- Minimal Header -->
     <header class="fixed top-0 left-0 right-0 z-50 border-b border-black bg-white" role="banner" id="main-header">
         <!-- Top Utility Bar -->
-        <div class="border-b border-black transition-all duration-300">
+        <div class="border-b border-black transition-all duration-300 hidden md:block">
             <div class="max-w-7xl mx-auto px-4 transition-all duration-300">
                 <nav class="flex justify-between items-center h-10 text-xs transition-all duration-300" aria-label="ابزارهای سایت">
                     <div class="flex items-center gap-6">
                         @auth
-                            <span class="text-black">{{ auth()->user()->name }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-black font-medium">{{ auth()->user()->name }}</span>
+                            </div>
                         @endauth
                     </div>
                     <div class="flex items-center gap-4">
-                        <a href="#search" class="minimal-nav-link text-xs" aria-label="جستجو">جستجو</a>
+                        <a href="tel:09057449268" class="minimal-nav-link text-xs" aria-label="تماس با پشتیبانی ۰۹۰۵۷۴۴۹۲۶۸">
+                            پشتیبانی: ۰۹۰۵۷۴۴۹۲۶۸
+                        </a>
+                        <span class="text-xs text-black hidden lg:inline" aria-label="ساعت کاری پشتیبانی">ساعت کاری: ۱۰ شب تا ۵</span>
+                        <a href="#search" class="minimal-nav-link text-xs">جستجو</a>
                         @auth
                             <a href="{{ route('cart.index') }}" class="minimal-nav-link text-xs relative" aria-label="سبد خرید">
                                 سبد خرید
@@ -213,26 +230,54 @@
                 </nav>
             </div>
         </div>
+        
+        <!-- Mobile Utility Bar -->
+        <div class="border-b border-black md:hidden">
+            <div class="px-4 py-2">
+                <div class="flex justify-between items-center gap-4 text-xs">
+                    <div class="flex items-center gap-3 overflow-x-auto">
+                        @auth
+                            <span class="text-black font-medium whitespace-nowrap">{{ auth()->user()->name }}</span>
+                        @endauth
+                        <a href="tel:09057449268" class="minimal-nav-link whitespace-nowrap">پشتیبانی</a>
+                        @auth
+                            <a href="{{ route('cart.index') }}" class="minimal-nav-link relative whitespace-nowrap">
+                                سبد خرید
+                                @php
+                                    $cartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity');
+                                @endphp
+                                @if($cartCount > 0)
+                                    <span class="absolute -top-1 -right-1 bg-black text-white text-[8px] w-3 h-3 flex items-center justify-center rounded-full">{{ $cartCount }}</span>
+                                @endif
+                            </a>
+                            <a href="{{ route('orders.index') }}" class="minimal-nav-link whitespace-nowrap">سفارشات</a>
+                        @else
+                            <a href="{{ route('login') }}" class="minimal-nav-link whitespace-nowrap">ورود</a>
+                        @endauth
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Navigation -->
         <nav class="max-w-7xl mx-auto px-4 transition-all duration-300" role="navigation" aria-label="منوی اصلی">
-            <div class="flex justify-center items-center py-6 transition-all duration-300">
+            <div class="flex justify-center items-center py-4 md:py-6 transition-all duration-300">
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="text-4xl font-bold tracking-tight text-black hover:opacity-70 transition-all duration-300" aria-label="صفحه اصلی فروشگاه">
+                <a href="{{ route('home') }}" class="text-2xl md:text-4xl font-bold tracking-tight text-black hover:opacity-70 transition-all duration-300" aria-label="صفحه اصلی فروشگاه">
                     فروشگاه
                 </a>
             </div>
             
             <!-- Main Menu -->
-            <div class="flex justify-center items-center gap-12 pb-6 transition-all duration-300">
-                <a href="{{ route('home') }}" class="minimal-nav-link {{ request()->routeIs('home') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('home') ? 'page' : 'false' }}">خانه</a>
-                <a href="{{ route('products.index') }}" class="minimal-nav-link {{ request()->routeIs('products.*') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('products.*') ? 'page' : 'false' }}">محصولات</a>
+            <div class="flex justify-center items-center gap-6 md:gap-12 pb-4 md:pb-6 transition-all duration-300">
+                <a href="{{ route('home') }}" class="minimal-nav-link text-sm md:text-base {{ request()->routeIs('home') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('home') ? 'page' : 'false' }}">خانه</a>
+                <a href="{{ route('products.index') }}" class="minimal-nav-link text-sm md:text-base {{ request()->routeIs('products.*') ? 'font-bold' : '' }}" aria-current="{{ request()->routeIs('products.*') ? 'page' : 'false' }}">محصولات</a>
             </div>
         </nav>
     </header>
     
     <!-- Header spacer to prevent layout shift -->
-    <div id="header-spacer" style="height: 140px; transition: height 0.3s ease;"></div>
+    <div id="header-spacer" style="transition: height 0.3s ease;"></div>
 
     <!-- Messages -->
     @if(session('success'))

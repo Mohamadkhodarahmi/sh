@@ -9,18 +9,13 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
         $cartItems = CartItem::where('user_id', Auth::id())
             ->with('product')
             ->get();
-        
-        $total = $cartItems->sum(function($item) {
+
+        $total = $cartItems->sum(function ($item) {
             return $item->total;
         });
 
@@ -35,7 +30,7 @@ class CartController extends Controller
         ]);
 
         $product = Product::findOrFail($request->product_id);
-        
+
         if ($product->stock < $request->quantity) {
             return back()->with('error', 'موجودی محصول کافی نیست');
         }
@@ -85,7 +80,7 @@ class CartController extends Controller
         $cartItem = CartItem::where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
-        
+
         $cartItem->delete();
 
         return back()->with('success', 'محصول از سبد خرید حذف شد');

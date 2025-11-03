@@ -3,89 +3,89 @@
 @section('title', 'سبد خرید')
 
 @section('content')
-<h1 class="text-4xl font-bold mb-8">سبد خرید</h1>
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold mb-2">سبد خرید</h1>
+    </header>
 
-@if($cartItems->count() > 0)
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="px-6 py-4 text-right">محصول</th>
-                <th class="px-6 py-4 text-center">قیمت واحد</th>
-                <th class="px-6 py-4 text-center">تعداد</th>
-                <th class="px-6 py-4 text-center">جمع</th>
-                <th class="px-6 py-4 text-center">عملیات</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($cartItems as $item)
-                <tr class="border-t">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-4">
-                            @if($item->product->images && count($item->product->images) > 0)
-                                <img src="{{ asset('storage/' . $item->product->images[0]) }}" 
-                                     alt="{{ $item->product->name_fa }}" 
-                                     class="w-20 h-20 object-cover rounded">
-                            @endif
-                            <div>
-                                <h3 class="font-bold">{{ $item->product->name_fa }}</h3>
-                                <p class="text-sm text-gray-600">{{ Str::limit($item->product->short_description, 50) }}</p>
+    @if($cartItems->count() > 0)
+    <div class="space-y-8">
+        @foreach($cartItems as $item)
+            <article class="border-b border-black pb-8">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Product Image -->
+                    @if($item->product->images && count($item->product->images) > 0)
+                        <div class="w-full md:w-32 flex-shrink-0">
+                            <img src="{{ asset('storage/' . $item->product->images[0]) }}" 
+                                 alt="{{ $item->product->name_fa }}" 
+                                 class="w-full h-32 md:h-32 object-cover">
+                        </div>
+                    @endif
+                    
+                    <!-- Product Info -->
+                    <div class="flex-1">
+                        <h2 class="text-xl font-bold mb-2">{{ $item->product->name_fa }}</h2>
+                        @if($item->product->short_description)
+                            <p class="text-sm text-black mb-4">{{ Str::limit($item->product->short_description, 80) }}</p>
+                        @endif
+                        
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div class="flex flex-col gap-2">
+                                <span class="text-sm">قیمت واحد: <span class="font-medium">{{ number_format($item->price) }} تومان</span></span>
+                                <span class="text-sm">جمع: <span class="font-bold text-lg">{{ number_format($item->total) }} تومان</span></span>
+                            </div>
+                            
+                            <div class="flex flex-col gap-3">
+                                <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center gap-2">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="number" 
+                                           name="quantity" 
+                                           value="{{ $item->quantity }}" 
+                                           min="1" 
+                                           max="{{ $item->product->stock }}"
+                                           class="w-20 px-0 py-2 border-0 border-b border-black bg-transparent focus:outline-none focus:border-black text-sm text-center">
+                                    <button type="submit" class="text-xs underline hover:opacity-60 transition">
+                                        بروزرسانی
+                                    </button>
+                                </form>
+                                
+                                <form action="{{ route('cart.destroy', $item->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs underline hover:opacity-60 transition text-black">
+                                        حذف
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        {{ number_format($item->price) }} تومان
-                    </td>
-                    <td class="px-6 py-4">
-                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center justify-center gap-2">
-                            @csrf
-                            @method('PUT')
-                            <input type="number" name="quantity" value="{{ $item->quantity }}" 
-                                   min="1" max="{{ $item->product->stock }}"
-                                   class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 text-sm">
-                                بروزرسانی
-                            </button>
-                        </form>
-                    </td>
-                    <td class="px-6 py-4 text-center font-bold">
-                        {{ number_format($item->total) }} تومان
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <form action="{{ route('cart.destroy', $item->id) }}" method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                                حذف
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-        <tfoot class="bg-gray-100">
-            <tr>
-                <td colspan="3" class="px-6 py-4 text-left font-bold">جمع کل:</td>
-                <td colspan="2" class="px-6 py-4 text-center font-bold text-2xl">
-                    {{ number_format($total) }} تومان
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+                    </div>
+                </div>
+            </article>
+        @endforeach
+    </div>
     
-    <div class="p-6 text-left">
-        <a href="{{ route('orders.checkout') }}" class="bg-green-600 text-white px-8 py-3 rounded hover:bg-green-700 font-bold text-lg">
-            ادامه و ثبت سفارش
+    <div class="mt-12 pt-8 border-t border-black">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+                <span class="text-sm">جمع کل:</span>
+                <span class="text-3xl font-bold mr-2">{{ number_format($total) }} تومان</span>
+            </div>
+            <a href="{{ route('orders.checkout') }}" 
+               class="bg-black text-white px-8 py-3 text-sm font-medium hover:opacity-80 transition text-center">
+                ادامه و ثبت سفارش
+            </a>
+        </div>
+    </div>
+    @else
+    <div class="text-center py-20">
+        <p class="text-sm mb-6">سبد خرید شما خالی است</p>
+        <a href="{{ route('products.index') }}" 
+           class="bg-black text-white px-8 py-3 text-sm font-medium hover:opacity-80 transition inline-block">
+            مشاهده محصولات
         </a>
     </div>
+    @endif
 </div>
-@else
-<div class="text-center py-12 bg-white rounded-lg shadow-md">
-    <p class="text-gray-600 text-xl mb-4">سبد خرید شما خالی است</p>
-    <a href="{{ route('products.index') }}" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 inline-block">
-        مشاهده محصولات
-    </a>
-</div>
-@endif
 @endsection
 
